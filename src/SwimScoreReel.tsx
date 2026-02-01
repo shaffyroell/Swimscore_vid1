@@ -9,19 +9,16 @@ import {
 const SCENE_1_START = 0;
 const SCENE_2_START = 60;
 const SCENE_3_START = 105;
-const SCENE_4_START = 165;
-const SCENE_5_START = 210;
-const SCENE_5_END = 270;
+const SCENE_4_START = 180;
+const SCENE_4_END = 270;
 
 // Metrics text for Scene 1
 const metrics = ["Sleep", "Recovery", "Heart Rate", "VO₂ Max"];
 
-// System loop words for Scene 5
-const systemWords = ["Measure", "Improve", "Track"];
-
-// Ring constants (shared across scenes)
-const RING_RADIUS = 100;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+// Chart dimensions
+const CHART_WIDTH = 280;
+const CHART_HEIGHT = 180;
+const BAR_WIDTH = 60;
 
 // Styles with improved contrast
 const styles: { [key: string]: React.CSSProperties } = {
@@ -36,62 +33,66 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    gap: 32, // Increased spacing
+    gap: 32,
   },
   metricText: {
     fontSize: 48,
     fontWeight: 400,
     letterSpacing: 1,
     margin: 0,
-    color: "rgba(255, 255, 255, 0.7)", // 70% white for first 3
+    color: "rgba(255, 255, 255, 0.7)",
   },
   metricTextLast: {
     fontSize: 48,
-    fontWeight: 500, // Slightly heavier
+    fontWeight: 500,
     letterSpacing: 1,
     margin: 0,
-    color: "rgba(255, 255, 255, 0.88)", // 88% white for last
+    color: "rgba(255, 255, 255, 0.88)",
   },
   missingText: {
-    fontSize: 44,
+    fontSize: 40,
     fontWeight: 600,
     letterSpacing: 0.5,
     color: "#ffffff",
+    textAlign: "center" as const,
+    lineHeight: 1.3,
   },
-  swimScoreText: {
-    fontSize: 54,
-    fontWeight: 700,
-    letterSpacing: 2,
+  metricLabel: {
+    fontSize: 36,
+    fontWeight: 600,
     color: "#ffffff",
-    margin: 0,
-  },
-  taglineTextPrimary: {
-    fontSize: 42, // Increased by ~30%
-    fontWeight: 500,
-    color: "#ffffff", // Full white
     textAlign: "center" as const,
     margin: 0,
   },
-  taglineTextSecondary: {
-    fontSize: 28,
-    fontWeight: 400,
-    color: "rgba(255, 255, 255, 0.5)", // Muted
-    textAlign: "center" as const,
-    margin: 0,
-  },
-  systemWord: {
-    fontSize: 38,
+  measureText: {
+    fontSize: 32,
     fontWeight: 500,
-    letterSpacing: 1.5,
     color: "rgba(255, 255, 255, 0.9)",
+    textAlign: "center" as const,
+    margin: 0,
+  },
+  ctaText: {
+    fontSize: 34,
+    fontWeight: 500,
+    color: "#ffffff",
+    textAlign: "center" as const,
+    lineHeight: 1.4,
+    margin: 0,
+    maxWidth: 600,
+  },
+  ctaSecondary: {
+    fontSize: 30,
+    fontWeight: 600,
+    color: "rgba(255, 255, 255, 0.95)",
+    textAlign: "center" as const,
     margin: 0,
   },
 };
 
 // Scene 1: What Men Already Track
 const Scene1: React.FC<{ frame: number }> = ({ frame }) => {
-  const lineDelay = 9; // Faster sequence
-  const animDuration = 12; // Snappier animation
+  const lineDelay = 9;
+  const animDuration = 12;
 
   return (
     <div style={styles.metricsContainer}>
@@ -138,16 +139,16 @@ const Scene1: React.FC<{ frame: number }> = ({ frame }) => {
   );
 };
 
-// Scene 2: Something Is Missing
+// Scene 2: One Health Metric Is Missing
 const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
-  const moveStart = SCENE_2_START;
-  const moveDuration = 20; // Slightly faster
+  const fadeStart = SCENE_2_START;
+  const fadeDuration = 18;
 
-  // Metrics group animation - more aggressive
-  const groupTranslateY = interpolate(
+  // Metrics fade away completely
+  const metricsOpacity = interpolate(
     frame,
-    [moveStart, moveStart + moveDuration],
-    [0, -32], // Increased movement
+    [fadeStart, fadeStart + fadeDuration],
+    [1, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
@@ -155,22 +156,11 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  const groupOpacity = interpolate(
-    frame,
-    [moveStart, moveStart + moveDuration],
-    [1, 0.28], // More aggressive fade
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.inOut(Easing.cubic),
-    }
-  );
-
-  // "One metric missing" text animation
-  const textStart = moveStart + 12;
+  // "One health metric is missing" text animation
+  const textStart = fadeStart + 14;
   const missingOpacity = interpolate(
     frame,
-    [textStart, textStart + 14],
+    [textStart, textStart + 16],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -181,8 +171,8 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
 
   const missingTranslateY = interpolate(
     frame,
-    [textStart, textStart + 14],
-    [8, 0],
+    [textStart, textStart + 16],
+    [12, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
@@ -192,12 +182,11 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
 
   return (
     <>
-      {/* Metrics group that moves up and fades */}
+      {/* Metrics fading away */}
       <div
         style={{
           ...styles.metricsContainer,
-          opacity: groupOpacity,
-          transform: `translateY(${groupTranslateY}px)`,
+          opacity: metricsOpacity,
         }}
       >
         {metrics.map((metric, index) => {
@@ -213,32 +202,35 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
         })}
       </div>
 
-      {/* "One metric missing" text */}
+      {/* "One health metric is missing" text */}
       <div
         style={{
           position: "absolute",
-          bottom: "36%",
+          top: 0,
           left: 0,
           right: 0,
+          bottom: 0,
           display: "flex",
+          alignItems: "center",
           justifyContent: "center",
           opacity: missingOpacity,
           transform: `translateY(${missingTranslateY}px)`,
+          padding: 40,
         }}
       >
-        <p style={styles.missingText}>One metric missing</p>
+        <p style={styles.missingText}>One health metric{"\n"}is missing</p>
       </div>
     </>
   );
 };
 
-// Scene 3: The Scroll Stop
+// Scene 3: Bar Chart → Line Chart Transition
 const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
-  // Fade out previous content
+  // Phase 1: Fade out previous, bar chart appears and fills
   const fadeOutStart = SCENE_3_START;
   const fadeOutOpacity = interpolate(
     frame,
-    [fadeOutStart, fadeOutStart + 12],
+    [fadeOutStart, fadeOutStart + 10],
     [1, 0],
     {
       extrapolateLeft: "clamp",
@@ -247,34 +239,25 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // Ring draw animation with overshoot
-  const ringStart = SCENE_3_START + 8;
-  const ringDuration = 36;
-  const ringSettleDuration = 5;
-
-  // Overshoot to 82%, then settle to 80%
-  const ringProgress = interpolate(
+  // Bar fill animation (smooth, no overshoot)
+  const barStart = SCENE_3_START + 8;
+  const barDuration = 30;
+  const barFillPercent = interpolate(
     frame,
-    [
-      ringStart,
-      ringStart + ringDuration,
-      ringStart + ringDuration + ringSettleDuration,
-    ],
-    [0, 0.82, 0.8],
+    [barStart, barStart + barDuration],
+    [0, 75],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-      easing: Easing.out(Easing.cubic),
+      easing: Easing.out(Easing.quad),
     }
   );
 
-  const strokeDashoffset = RING_CIRCUMFERENCE * (1 - ringProgress);
-
-  // SwimScore text animation - starts at ~70% ring completion (earlier)
-  const textStart = ringStart + Math.floor(ringDuration * 0.7);
-  const swimScoreOpacity = interpolate(
+  // "Male Fertility Health Metric" text
+  const labelStart = barStart + 15;
+  const labelOpacity = interpolate(
     frame,
-    [textStart, textStart + 12],
+    [labelStart, labelStart + 14],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -283,16 +266,87 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  const swimScoreTranslateY = interpolate(
+  // Phase 2: Bar transforms to line chart
+  const transitionStart = SCENE_3_START + 45;
+  const transitionDuration = 20;
+
+  // Bar fades out
+  const barOpacity = interpolate(
     frame,
-    [textStart, textStart + 12],
-    [6, 0],
+    [transitionStart, transitionStart + transitionDuration / 2],
+    [1, 0],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.inOut(Easing.cubic),
+    }
+  );
+
+  // Line chart fades in
+  const lineChartOpacity = interpolate(
+    frame,
+    [transitionStart + 8, transitionStart + transitionDuration],
+    [0, 1],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
       easing: Easing.out(Easing.cubic),
     }
   );
+
+  // Line drawing animation
+  const lineDrawStart = transitionStart + 12;
+  const lineDrawDuration = 25;
+  const lineProgress = interpolate(
+    frame,
+    [lineDrawStart, lineDrawStart + lineDrawDuration],
+    [0, 1],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.out(Easing.quad),
+    }
+  );
+
+  // "Measure and improve" text
+  const measureStart = transitionStart + 20;
+  const measureOpacity = interpolate(
+    frame,
+    [measureStart, measureStart + 14],
+    [0, 1],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.out(Easing.cubic),
+    }
+  );
+
+  const measureTranslateY = interpolate(
+    frame,
+    [measureStart, measureStart + 14],
+    [8, 0],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.out(Easing.cubic),
+    }
+  );
+
+  // Line chart path (upward trend)
+  const linePoints = [
+    { x: 0, y: 140 },
+    { x: 70, y: 120 },
+    { x: 140, y: 90 },
+    { x: 210, y: 50 },
+    { x: 280, y: 30 },
+  ];
+
+  const linePath = linePoints
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
+
+  const lineLength = 350; // Approximate path length
+  const lineDashOffset = lineLength * (1 - lineProgress);
 
   return (
     <>
@@ -305,107 +359,179 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
           right: 0,
           bottom: 0,
           display: "flex",
-          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           opacity: fadeOutOpacity,
+          padding: 40,
         }}
       >
-        <div
-          style={{
-            ...styles.metricsContainer,
-            opacity: 0.28,
-            transform: "translateY(-32px)",
-          }}
-        >
-          {metrics.map((metric, index) => {
-            const isLast = index === metrics.length - 1;
-            return (
-              <p
-                key={metric}
-                style={isLast ? styles.metricTextLast : styles.metricText}
-              >
-                {metric}
-              </p>
-            );
-          })}
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            bottom: "36%",
-            left: 0,
-            right: 0,
-            display: "flex",
-            justifyContent: "center",
-          }}
-        >
-          <p style={styles.missingText}>One metric missing</p>
-        </div>
+        <p style={styles.missingText}>One health metric{"\n"}is missing</p>
       </div>
 
-      {/* Ring and SwimScore */}
+      {/* Main chart container */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 36,
+          gap: 30,
         }}
       >
-        {/* Circular ring */}
-        <svg
-          width={RING_RADIUS * 2 + 20}
-          height={RING_RADIUS * 2 + 20}
-          style={{ transform: "rotate(-90deg)" }}
-        >
-          <circle
-            cx={RING_RADIUS + 10}
-            cy={RING_RADIUS + 10}
-            r={RING_RADIUS}
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth={3}
-            strokeDasharray={RING_CIRCUMFERENCE}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-          />
-        </svg>
-
-        {/* SwimScore text */}
-        <p
+        {/* Chart area */}
+        <div
           style={{
-            ...styles.swimScoreText,
-            opacity: swimScoreOpacity,
-            transform: `translateY(${swimScoreTranslateY}px)`,
+            width: CHART_WIDTH,
+            height: CHART_HEIGHT,
+            position: "relative",
           }}
         >
-          SwimScore™
+          {/* Bar chart */}
+          <svg
+            width={CHART_WIDTH}
+            height={CHART_HEIGHT}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              opacity: barOpacity,
+            }}
+          >
+            {/* Background bar (outline) */}
+            <rect
+              x={(CHART_WIDTH - BAR_WIDTH) / 2}
+              y={0}
+              width={BAR_WIDTH}
+              height={CHART_HEIGHT}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.2)"
+              strokeWidth={2}
+              rx={4}
+            />
+            {/* Filled bar */}
+            <rect
+              x={(CHART_WIDTH - BAR_WIDTH) / 2}
+              y={CHART_HEIGHT - (CHART_HEIGHT * barFillPercent) / 100}
+              width={BAR_WIDTH}
+              height={(CHART_HEIGHT * barFillPercent) / 100}
+              fill="rgba(255, 255, 255, 0.9)"
+              rx={4}
+            />
+            {/* Percentage text */}
+            {barFillPercent > 10 && (
+              <text
+                x={CHART_WIDTH / 2}
+                y={CHART_HEIGHT - (CHART_HEIGHT * barFillPercent) / 100 + 30}
+                textAnchor="middle"
+                fill="#0d0d1a"
+                fontSize={20}
+                fontWeight={600}
+              >
+                {Math.round(barFillPercent)}%
+              </text>
+            )}
+          </svg>
+
+          {/* Line chart */}
+          <svg
+            width={CHART_WIDTH}
+            height={CHART_HEIGHT}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              opacity: lineChartOpacity,
+            }}
+          >
+            {/* Grid lines */}
+            <line
+              x1={0}
+              y1={CHART_HEIGHT}
+              x2={CHART_WIDTH}
+              y2={CHART_HEIGHT}
+              stroke="rgba(255, 255, 255, 0.2)"
+              strokeWidth={1}
+            />
+            <line
+              x1={0}
+              y1={0}
+              x2={0}
+              y2={CHART_HEIGHT}
+              stroke="rgba(255, 255, 255, 0.2)"
+              strokeWidth={1}
+            />
+            {/* Trend line */}
+            <path
+              d={linePath}
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={lineLength}
+              strokeDashoffset={lineDashOffset}
+            />
+            {/* End point dot */}
+            {lineProgress > 0.9 && (
+              <circle
+                cx={280}
+                cy={30}
+                r={6}
+                fill="#ffffff"
+                opacity={interpolate(
+                  frame,
+                  [lineDrawStart + lineDrawDuration - 3, lineDrawStart + lineDrawDuration],
+                  [0, 1],
+                  { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+                )}
+              />
+            )}
+          </svg>
+        </div>
+
+        {/* "Male Fertility Health Metric" label */}
+        <p
+          style={{
+            ...styles.metricLabel,
+            opacity: labelOpacity,
+          }}
+        >
+          Male Fertility Health Metric
+        </p>
+
+        {/* "Measure and improve" text */}
+        <p
+          style={{
+            ...styles.measureText,
+            opacity: measureOpacity,
+            transform: `translateY(${measureTranslateY}px)`,
+          }}
+        >
+          Measure and improve
         </p>
       </div>
     </>
   );
 };
 
-// Scene 4: What It Is
+// Scene 4: CTA
 const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
-  // Ring stays visible but fades slightly
-  const ringOpacity = interpolate(
+  // Line chart persists (faded)
+  const lineChartOpacity = interpolate(
     frame,
-    [SCENE_4_START, SCENE_4_START + 8],
-    [1, 0.75],
+    [SCENE_4_START, SCENE_4_START + 10],
+    [1, 0.3],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }
   );
 
-  // Tagline animation
-  const taglineStart = SCENE_4_START + 4;
-  const taglineOpacity = interpolate(
+  // Main CTA text
+  const ctaStart = SCENE_4_START + 5;
+  const ctaOpacity = interpolate(
     frame,
-    [taglineStart, taglineStart + 14],
+    [ctaStart, ctaStart + 18],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -414,10 +540,10 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  const taglineTranslateY = interpolate(
+  const ctaTranslateY = interpolate(
     frame,
-    [taglineStart, taglineStart + 14],
-    [6, 0],
+    [ctaStart, ctaStart + 18],
+    [10, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
@@ -425,11 +551,11 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // "Measured." animation (slightly delayed)
-  const measuredStart = taglineStart + 10;
-  const measuredOpacity = interpolate(
+  // "Be proactive" secondary text
+  const proactiveStart = ctaStart + 18;
+  const proactiveOpacity = interpolate(
     frame,
-    [measuredStart, measuredStart + 12],
+    [proactiveStart, proactiveStart + 14],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -438,7 +564,17 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  const strokeDashoffset = RING_CIRCUMFERENCE * 0.2;
+  // Line chart path (same as Scene 3)
+  const linePoints = [
+    { x: 0, y: 140 },
+    { x: 70, y: 120 },
+    { x: 140, y: 90 },
+    { x: 210, y: 50 },
+    { x: 280, y: 30 },
+  ];
+  const linePath = linePoints
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
+    .join(" ");
 
   return (
     <div
@@ -447,159 +583,68 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 24,
+        gap: 40,
+        padding: 40,
       }}
     >
-      {/* Ring (persistent from Scene 3) */}
+      {/* Faded line chart */}
       <svg
-        width={RING_RADIUS * 2 + 20}
-        height={RING_RADIUS * 2 + 20}
-        style={{ transform: "rotate(-90deg)", opacity: ringOpacity }}
+        width={CHART_WIDTH}
+        height={CHART_HEIGHT}
+        style={{ opacity: lineChartOpacity }}
       >
-        <circle
-          cx={RING_RADIUS + 10}
-          cy={RING_RADIUS + 10}
-          r={RING_RADIUS}
+        <line
+          x1={0}
+          y1={CHART_HEIGHT}
+          x2={CHART_WIDTH}
+          y2={CHART_HEIGHT}
+          stroke="rgba(255, 255, 255, 0.2)"
+          strokeWidth={1}
+        />
+        <line
+          x1={0}
+          y1={0}
+          x2={0}
+          y2={CHART_HEIGHT}
+          stroke="rgba(255, 255, 255, 0.2)"
+          strokeWidth={1}
+        />
+        <path
+          d={linePath}
           fill="none"
           stroke="#ffffff"
           strokeWidth={3}
-          strokeDasharray={RING_CIRCUMFERENCE}
-          strokeDashoffset={strokeDashoffset}
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
+        <circle cx={280} cy={30} r={6} fill="#ffffff" />
       </svg>
 
-      {/* SwimScore text */}
-      <p style={styles.swimScoreText}>SwimScore™</p>
-
-      {/* Tagline - "Male fertility health metric" */}
-      <p
-        style={{
-          ...styles.taglineTextPrimary,
-          opacity: taglineOpacity,
-          transform: `translateY(${taglineTranslateY}px)`,
-        }}
-      >
-        Male fertility health metric
-      </p>
-
-      {/* "Measured." - qualifier */}
-      <p
-        style={{
-          ...styles.taglineTextSecondary,
-          opacity: measuredOpacity,
-        }}
-      >
-        Measured.
-      </p>
-    </div>
-  );
-};
-
-// Scene 5: System Loop
-const Scene5: React.FC<{ frame: number }> = ({ frame }) => {
-  const wordDelay = 9; // Frames between words
-  const animDuration = 12;
-
-  // Ring with subtle pulse on "Track"
-  const trackStartFrame = SCENE_5_START + 2 * wordDelay;
-  const ringScale = interpolate(
-    frame,
-    [trackStartFrame, trackStartFrame + 8, trackStartFrame + 16],
-    [1, 1.03, 1],
-    {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-      easing: Easing.inOut(Easing.ease),
-    }
-  );
-
-  const strokeDashoffset = RING_CIRCUMFERENCE * 0.2;
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 32,
-      }}
-    >
-      {/* Ring with pulse */}
-      <svg
-        width={RING_RADIUS * 2 + 20}
-        height={RING_RADIUS * 2 + 20}
-        style={{
-          transform: `rotate(-90deg) scale(${ringScale})`,
-          opacity: 0.75,
-        }}
-      >
-        <circle
-          cx={RING_RADIUS + 10}
-          cy={RING_RADIUS + 10}
-          r={RING_RADIUS}
-          fill="none"
-          stroke="#ffffff"
-          strokeWidth={3}
-          strokeDasharray={RING_CIRCUMFERENCE}
-          strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
-        />
-      </svg>
-
-      {/* SwimScore text */}
-      <p style={{ ...styles.swimScoreText, opacity: 0.9 }}>SwimScore™</p>
-
-      {/* System words */}
+      {/* CTA text */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 16,
-          marginTop: 12,
+          gap: 20,
+          opacity: ctaOpacity,
+          transform: `translateY(${ctaTranslateY}px)`,
         }}
       >
-        {systemWords.map((word, index) => {
-          const wordStart = SCENE_5_START + index * wordDelay;
-
-          const opacity = interpolate(
-            frame,
-            [wordStart, wordStart + animDuration],
-            [0, 1],
-            {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-              easing: Easing.out(Easing.cubic),
-            }
-          );
-
-          const translateY = interpolate(
-            frame,
-            [wordStart, wordStart + animDuration],
-            [6, 0],
-            {
-              extrapolateLeft: "clamp",
-              extrapolateRight: "clamp",
-              easing: Easing.out(Easing.cubic),
-            }
-          );
-
-          return (
-            <p
-              key={word}
-              style={{
-                ...styles.systemWord,
-                opacity,
-                transform: `translateY(${translateY}px)`,
-              }}
-            >
-              {word}
-            </p>
-          );
-        })}
+        <p style={styles.ctaText}>
+          Know where you stand on{"\n"}the ultimate health metric.
+        </p>
       </div>
+
+      {/* "Be proactive" */}
+      <p
+        style={{
+          ...styles.ctaSecondary,
+          opacity: proactiveOpacity,
+        }}
+      >
+        Be proactive.
+      </p>
     </div>
   );
 };
@@ -612,8 +657,7 @@ export const SwimScoreReel: React.FC = () => {
   const isScene1 = frame >= SCENE_1_START && frame < SCENE_2_START;
   const isScene2 = frame >= SCENE_2_START && frame < SCENE_3_START;
   const isScene3 = frame >= SCENE_3_START && frame < SCENE_4_START;
-  const isScene4 = frame >= SCENE_4_START && frame < SCENE_5_START;
-  const isScene5 = frame >= SCENE_5_START && frame <= SCENE_5_END;
+  const isScene4 = frame >= SCENE_4_START && frame <= SCENE_4_END;
 
   return (
     <AbsoluteFill style={styles.container}>
@@ -628,7 +672,6 @@ export const SwimScoreReel: React.FC = () => {
         {isScene2 && <Scene2 frame={frame} />}
         {isScene3 && <Scene3 frame={frame} />}
         {isScene4 && <Scene4 frame={frame} />}
-        {isScene5 && <Scene5 frame={frame} />}
       </AbsoluteFill>
     </AbsoluteFill>
   );
