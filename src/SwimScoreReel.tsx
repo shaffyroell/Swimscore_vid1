@@ -9,16 +9,17 @@ import {
 const SCENE_1_START = 0;
 const SCENE_2_START = 60;
 const SCENE_3_START = 105;
-const SCENE_4_START = 180;
+const SCENE_4_START = 195;
 const SCENE_4_END = 270;
 
 // Metrics text for Scene 1
 const metrics = ["Sleep", "Recovery", "Heart Rate", "VO₂ Max"];
 
 // Chart dimensions
-const CHART_WIDTH = 280;
-const CHART_HEIGHT = 180;
-const BAR_WIDTH = 60;
+const BAR_CHART_WIDTH = 320;
+const BAR_CHART_HEIGHT = 40;
+const LINE_CHART_WIDTH = 300;
+const LINE_CHART_HEIGHT = 160;
 
 // Styles with improved contrast
 const styles: { [key: string]: React.CSSProperties } = {
@@ -55,33 +56,33 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: 0.5,
     color: "#ffffff",
     textAlign: "center" as const,
-    lineHeight: 1.3,
+    lineHeight: 1.4,
   },
   metricLabel: {
-    fontSize: 36,
+    fontSize: 34,
     fontWeight: 600,
     color: "#ffffff",
     textAlign: "center" as const,
     margin: 0,
   },
   measureText: {
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: 500,
     color: "rgba(255, 255, 255, 0.9)",
     textAlign: "center" as const,
     margin: 0,
   },
   ctaText: {
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: 500,
     color: "#ffffff",
     textAlign: "center" as const,
-    lineHeight: 1.4,
+    lineHeight: 1.5,
     margin: 0,
     maxWidth: 600,
   },
   ctaSecondary: {
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: 600,
     color: "rgba(255, 255, 255, 0.95)",
     textAlign: "center" as const,
@@ -91,8 +92,8 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 // Scene 1: What Men Already Track
 const Scene1: React.FC<{ frame: number }> = ({ frame }) => {
-  const lineDelay = 9;
-  const animDuration = 12;
+  const lineDelay = 12; // Slower - more time between lines
+  const animDuration = 18; // Slower fade in
 
   return (
     <div style={styles.metricsContainer}>
@@ -142,7 +143,7 @@ const Scene1: React.FC<{ frame: number }> = ({ frame }) => {
 // Scene 2: One Health Metric Is Missing
 const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
   const fadeStart = SCENE_2_START;
-  const fadeDuration = 18;
+  const fadeDuration = 22; // Slower fade out
 
   // Metrics fade away completely
   const metricsOpacity = interpolate(
@@ -156,11 +157,11 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // "One health metric is missing" text animation
-  const textStart = fadeStart + 14;
+  // "One health metric is missing" text animation - slower
+  const textStart = fadeStart + 18;
   const missingOpacity = interpolate(
     frame,
-    [textStart, textStart + 16],
+    [textStart, textStart + 22],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -171,7 +172,7 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
 
   const missingTranslateY = interpolate(
     frame,
-    [textStart, textStart + 16],
+    [textStart, textStart + 22],
     [12, 0],
     {
       extrapolateLeft: "clamp",
@@ -224,13 +225,13 @@ const Scene2: React.FC<{ frame: number }> = ({ frame }) => {
   );
 };
 
-// Scene 3: Bar Chart → Line Chart Transition
+// Scene 3: Horizontal Bar Chart → Line Chart Transition
 const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
-  // Phase 1: Fade out previous, bar chart appears and fills
+  // Phase 1: Fade out previous text
   const fadeOutStart = SCENE_3_START;
   const fadeOutOpacity = interpolate(
     frame,
-    [fadeOutStart, fadeOutStart + 10],
+    [fadeOutStart, fadeOutStart + 15],
     [1, 0],
     {
       extrapolateLeft: "clamp",
@@ -239,9 +240,9 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // Bar fill animation (smooth, no overshoot)
-  const barStart = SCENE_3_START + 8;
-  const barDuration = 30;
+  // Horizontal bar fill animation (smooth)
+  const barStart = SCENE_3_START + 12;
+  const barDuration = 40; // Slower fill
   const barFillPercent = interpolate(
     frame,
     [barStart, barStart + barDuration],
@@ -253,11 +254,11 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // "Male Fertility Health Metric" text
-  const labelStart = barStart + 15;
+  // "Male Fertility Health Metric" text - slower
+  const labelStart = barStart + 25;
   const labelOpacity = interpolate(
     frame,
-    [labelStart, labelStart + 14],
+    [labelStart, labelStart + 20],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -266,26 +267,24 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // Phase 2: Bar transforms to line chart
-  const transitionStart = SCENE_3_START + 45;
-  const transitionDuration = 20;
-
-  // Bar fades out
+  // Phase 2: Bar fades out completely, then line chart comes in
+  const barFadeStart = SCENE_3_START + 58;
   const barOpacity = interpolate(
     frame,
-    [transitionStart, transitionStart + transitionDuration / 2],
+    [barFadeStart, barFadeStart + 12],
     [1, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
-      easing: Easing.inOut(Easing.cubic),
+      easing: Easing.out(Easing.cubic),
     }
   );
 
-  // Line chart fades in
+  // Line chart appears after bar is gone
+  const lineChartStart = barFadeStart + 15;
   const lineChartOpacity = interpolate(
     frame,
-    [transitionStart + 8, transitionStart + transitionDuration],
+    [lineChartStart, lineChartStart + 12],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -295,8 +294,8 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
   );
 
   // Line drawing animation
-  const lineDrawStart = transitionStart + 12;
-  const lineDrawDuration = 25;
+  const lineDrawStart = lineChartStart + 5;
+  const lineDrawDuration = 30; // Slower line draw
   const lineProgress = interpolate(
     frame,
     [lineDrawStart, lineDrawStart + lineDrawDuration],
@@ -308,11 +307,11 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // "Measure and improve" text
-  const measureStart = transitionStart + 20;
+  // "Measure and improve" text - slower
+  const measureStart = lineDrawStart + 25;
   const measureOpacity = interpolate(
     frame,
-    [measureStart, measureStart + 14],
+    [measureStart, measureStart + 20],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -323,8 +322,8 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
 
   const measureTranslateY = interpolate(
     frame,
-    [measureStart, measureStart + 14],
-    [8, 0],
+    [measureStart, measureStart + 20],
+    [10, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
@@ -334,19 +333,23 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
 
   // Line chart path (upward trend)
   const linePoints = [
-    { x: 0, y: 140 },
-    { x: 70, y: 120 },
-    { x: 140, y: 90 },
-    { x: 210, y: 50 },
-    { x: 280, y: 30 },
+    { x: 0, y: 130 },
+    { x: 75, y: 110 },
+    { x: 150, y: 80 },
+    { x: 225, y: 45 },
+    { x: 300, y: 25 },
   ];
 
   const linePath = linePoints
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
     .join(" ");
 
-  const lineLength = 350; // Approximate path length
+  const lineLength = 380;
   const lineDashOffset = lineLength * (1 - lineProgress);
+
+  // Determine what to show
+  const showBar = frame < barFadeStart + 12;
+  const showLineChart = frame >= lineChartStart;
 
   return (
     <>
@@ -368,147 +371,159 @@ const Scene3: React.FC<{ frame: number }> = ({ frame }) => {
         <p style={styles.missingText}>One health metric{"\n"}is missing</p>
       </div>
 
-      {/* Main chart container */}
+      {/* Main content container */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: 30,
+          gap: 36,
         }}
       >
-        {/* Chart area */}
-        <div
-          style={{
-            width: CHART_WIDTH,
-            height: CHART_HEIGHT,
-            position: "relative",
-          }}
-        >
-          {/* Bar chart */}
-          <svg
-            width={CHART_WIDTH}
-            height={CHART_HEIGHT}
+        {/* Horizontal Bar Chart */}
+        {showBar && (
+          <div
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 24,
               opacity: barOpacity,
             }}
           >
-            {/* Background bar (outline) */}
-            <rect
-              x={(CHART_WIDTH - BAR_WIDTH) / 2}
-              y={0}
-              width={BAR_WIDTH}
-              height={CHART_HEIGHT}
-              fill="none"
-              stroke="rgba(255, 255, 255, 0.2)"
-              strokeWidth={2}
-              rx={4}
-            />
-            {/* Filled bar */}
-            <rect
-              x={(CHART_WIDTH - BAR_WIDTH) / 2}
-              y={CHART_HEIGHT - (CHART_HEIGHT * barFillPercent) / 100}
-              width={BAR_WIDTH}
-              height={(CHART_HEIGHT * barFillPercent) / 100}
-              fill="rgba(255, 255, 255, 0.9)"
-              rx={4}
-            />
-            {/* Percentage text */}
-            {barFillPercent > 10 && (
-              <text
-                x={CHART_WIDTH / 2}
-                y={CHART_HEIGHT - (CHART_HEIGHT * barFillPercent) / 100 + 30}
-                textAnchor="middle"
-                fill="#0d0d1a"
-                fontSize={20}
-                fontWeight={600}
-              >
-                {Math.round(barFillPercent)}%
-              </text>
-            )}
-          </svg>
+            <svg width={BAR_CHART_WIDTH} height={BAR_CHART_HEIGHT}>
+              {/* Background bar (outline) */}
+              <rect
+                x={0}
+                y={0}
+                width={BAR_CHART_WIDTH}
+                height={BAR_CHART_HEIGHT}
+                fill="none"
+                stroke="rgba(255, 255, 255, 0.25)"
+                strokeWidth={2}
+                rx={6}
+              />
+              {/* Filled bar (left to right) */}
+              <rect
+                x={0}
+                y={0}
+                width={(BAR_CHART_WIDTH * barFillPercent) / 100}
+                height={BAR_CHART_HEIGHT}
+                fill="rgba(255, 255, 255, 0.9)"
+                rx={6}
+              />
+              {/* Percentage text */}
+              {barFillPercent > 15 && (
+                <text
+                  x={(BAR_CHART_WIDTH * barFillPercent) / 100 - 35}
+                  y={BAR_CHART_HEIGHT / 2 + 6}
+                  textAnchor="middle"
+                  fill="#0d0d1a"
+                  fontSize={18}
+                  fontWeight={600}
+                >
+                  {Math.round(barFillPercent)}%
+                </text>
+              )}
+            </svg>
 
-          {/* Line chart */}
-          <svg
-            width={CHART_WIDTH}
-            height={CHART_HEIGHT}
+            {/* "Male Fertility Health Metric" label */}
+            <p
+              style={{
+                ...styles.metricLabel,
+                opacity: labelOpacity,
+              }}
+            >
+              Male Fertility Health Metric
+            </p>
+          </div>
+        )}
+
+        {/* Line Chart */}
+        {showLineChart && (
+          <div
             style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 28,
               opacity: lineChartOpacity,
             }}
           >
-            {/* Grid lines */}
-            <line
-              x1={0}
-              y1={CHART_HEIGHT}
-              x2={CHART_WIDTH}
-              y2={CHART_HEIGHT}
-              stroke="rgba(255, 255, 255, 0.2)"
-              strokeWidth={1}
-            />
-            <line
-              x1={0}
-              y1={0}
-              x2={0}
-              y2={CHART_HEIGHT}
-              stroke="rgba(255, 255, 255, 0.2)"
-              strokeWidth={1}
-            />
-            {/* Trend line */}
-            <path
-              d={linePath}
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth={3}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray={lineLength}
-              strokeDashoffset={lineDashOffset}
-            />
-            {/* End point dot */}
-            {lineProgress > 0.9 && (
-              <circle
-                cx={280}
-                cy={30}
-                r={6}
-                fill="#ffffff"
-                opacity={interpolate(
-                  frame,
-                  [lineDrawStart + lineDrawDuration - 3, lineDrawStart + lineDrawDuration],
-                  [0, 1],
-                  { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
-                )}
+            <svg width={LINE_CHART_WIDTH} height={LINE_CHART_HEIGHT}>
+              {/* Grid lines */}
+              <line
+                x1={0}
+                y1={LINE_CHART_HEIGHT}
+                x2={LINE_CHART_WIDTH}
+                y2={LINE_CHART_HEIGHT}
+                stroke="rgba(255, 255, 255, 0.2)"
+                strokeWidth={1}
               />
-            )}
-          </svg>
-        </div>
+              <line
+                x1={0}
+                y1={0}
+                x2={0}
+                y2={LINE_CHART_HEIGHT}
+                stroke="rgba(255, 255, 255, 0.2)"
+                strokeWidth={1}
+              />
+              {/* Horizontal grid lines */}
+              {[0.25, 0.5, 0.75].map((ratio) => (
+                <line
+                  key={ratio}
+                  x1={0}
+                  y1={LINE_CHART_HEIGHT * ratio}
+                  x2={LINE_CHART_WIDTH}
+                  y2={LINE_CHART_HEIGHT * ratio}
+                  stroke="rgba(255, 255, 255, 0.08)"
+                  strokeWidth={1}
+                />
+              ))}
+              {/* Trend line */}
+              <path
+                d={linePath}
+                fill="none"
+                stroke="#ffffff"
+                strokeWidth={3}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={lineLength}
+                strokeDashoffset={lineDashOffset}
+              />
+              {/* End point dot */}
+              {lineProgress > 0.85 && (
+                <circle
+                  cx={300}
+                  cy={25}
+                  r={6}
+                  fill="#ffffff"
+                  opacity={interpolate(
+                    frame,
+                    [
+                      lineDrawStart + lineDrawDuration * 0.85,
+                      lineDrawStart + lineDrawDuration,
+                    ],
+                    [0, 1],
+                    { extrapolateLeft: "clamp", extrapolateRight: "clamp" }
+                  )}
+                />
+              )}
+            </svg>
 
-        {/* "Male Fertility Health Metric" label */}
-        <p
-          style={{
-            ...styles.metricLabel,
-            opacity: labelOpacity,
-          }}
-        >
-          Male Fertility Health Metric
-        </p>
-
-        {/* "Measure and improve" text */}
-        <p
-          style={{
-            ...styles.measureText,
-            opacity: measureOpacity,
-            transform: `translateY(${measureTranslateY}px)`,
-          }}
-        >
-          Measure and improve
-        </p>
+            {/* "Measure and improve" text */}
+            <p
+              style={{
+                ...styles.measureText,
+                opacity: measureOpacity,
+                transform: `translateY(${measureTranslateY}px)`,
+              }}
+            >
+              Measure and improve
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
@@ -519,19 +534,19 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
   // Line chart persists (faded)
   const lineChartOpacity = interpolate(
     frame,
-    [SCENE_4_START, SCENE_4_START + 10],
-    [1, 0.3],
+    [SCENE_4_START, SCENE_4_START + 15],
+    [1, 0.25],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
     }
   );
 
-  // Main CTA text
-  const ctaStart = SCENE_4_START + 5;
+  // Main CTA text - slower
+  const ctaStart = SCENE_4_START + 8;
   const ctaOpacity = interpolate(
     frame,
-    [ctaStart, ctaStart + 18],
+    [ctaStart, ctaStart + 25],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -542,8 +557,8 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
 
   const ctaTranslateY = interpolate(
     frame,
-    [ctaStart, ctaStart + 18],
-    [10, 0],
+    [ctaStart, ctaStart + 25],
+    [12, 0],
     {
       extrapolateLeft: "clamp",
       extrapolateRight: "clamp",
@@ -551,11 +566,11 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
     }
   );
 
-  // "Be proactive" secondary text
-  const proactiveStart = ctaStart + 18;
+  // "Be proactive" secondary text - slower
+  const proactiveStart = ctaStart + 28;
   const proactiveOpacity = interpolate(
     frame,
-    [proactiveStart, proactiveStart + 14],
+    [proactiveStart, proactiveStart + 20],
     [0, 1],
     {
       extrapolateLeft: "clamp",
@@ -566,11 +581,11 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
 
   // Line chart path (same as Scene 3)
   const linePoints = [
-    { x: 0, y: 140 },
-    { x: 70, y: 120 },
-    { x: 140, y: 90 },
-    { x: 210, y: 50 },
-    { x: 280, y: 30 },
+    { x: 0, y: 130 },
+    { x: 75, y: 110 },
+    { x: 150, y: 80 },
+    { x: 225, y: 45 },
+    { x: 300, y: 25 },
   ];
   const linePath = linePoints
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
@@ -583,21 +598,21 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        gap: 40,
+        gap: 36,
         padding: 40,
       }}
     >
       {/* Faded line chart */}
       <svg
-        width={CHART_WIDTH}
-        height={CHART_HEIGHT}
+        width={LINE_CHART_WIDTH}
+        height={LINE_CHART_HEIGHT}
         style={{ opacity: lineChartOpacity }}
       >
         <line
           x1={0}
-          y1={CHART_HEIGHT}
-          x2={CHART_WIDTH}
-          y2={CHART_HEIGHT}
+          y1={LINE_CHART_HEIGHT}
+          x2={LINE_CHART_WIDTH}
+          y2={LINE_CHART_HEIGHT}
           stroke="rgba(255, 255, 255, 0.2)"
           strokeWidth={1}
         />
@@ -605,7 +620,7 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
           x1={0}
           y1={0}
           x2={0}
-          y2={CHART_HEIGHT}
+          y2={LINE_CHART_HEIGHT}
           stroke="rgba(255, 255, 255, 0.2)"
           strokeWidth={1}
         />
@@ -617,7 +632,7 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
           strokeLinecap="round"
           strokeLinejoin="round"
         />
-        <circle cx={280} cy={30} r={6} fill="#ffffff" />
+        <circle cx={300} cy={25} r={6} fill="#ffffff" />
       </svg>
 
       {/* CTA text */}
@@ -626,7 +641,7 @@ const Scene4: React.FC<{ frame: number }> = ({ frame }) => {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 20,
+          gap: 16,
           opacity: ctaOpacity,
           transform: `translateY(${ctaTranslateY}px)`,
         }}
